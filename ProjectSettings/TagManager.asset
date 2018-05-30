@@ -4,11 +4,9 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - limitLeft
-  - limitRight
-  - water
   - floor
-  - gameOver
+  - victory
+  - over
   layers:
   - Default
   - TransparentFX
@@ -47,17 +45,8 @@ TagManager:
     uniqueID: 0
     locked: 0
   - name: background
-    uniqueID: 189496629
+    uniqueID: 3447036037
     locked: 0
-  - name: backgroundHill
-    uniqueID: 789522351
-    locked: 0
-  - name: backgroundTree
-    uniqueID: 4144016069
-    locked: 0
-  - name: water
-    uniqueID: 1427457943
-    locked: 0
-  - name: playerLayer
-    uniqueID: 228774181
+  - name: platforms
+    uniqueID: 938903315
     locked: 0

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour {
 
@@ -15,6 +16,9 @@ public class PlayerController : MonoBehaviour {
     private bool isWalking = false;
     private bool isJumping = false;
     private float move;
+
+    [SerializeField]
+    private GameObject CanvasPause;
     // Use this for initialization
     void Start () {
         rigidPlayer = GetComponent<Rigidbody2D>();
@@ -25,10 +29,23 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-       if(Input.GetButtonDown("Jump")&&!isJumping)
+      
+        GetInput();
+    }
+
+    private void GetInput()
+    {
+
+        if (Input.GetButtonDown("Jump") && !isJumping)
         {
             isJumping = true;
             rigidPlayer.AddForce(new Vector2(move, jumpDist), ForceMode2D.Impulse);
+        }
+
+        if (Input.GetKeyDown("escape") && !CanvasPause.activeSelf)
+        {
+            CanvasPause.SetActive(true);
+            Time.timeScale = 0f;
         }
     }
 
@@ -36,8 +53,7 @@ public class PlayerController : MonoBehaviour {
     {
 
         move = Input.GetAxis("Horizontal");
-        if (!isJumping)
-        {
+        
             rigidPlayer.velocity = new Vector2(move * speedMove, rigidPlayer.velocity.y);
         
             if (move < 0)
@@ -60,7 +76,7 @@ public class PlayerController : MonoBehaviour {
             }
 
             Flip();
-        }
+        
 
 
     }
@@ -74,11 +90,28 @@ public class PlayerController : MonoBehaviour {
             rend.flipX = true;
     }
 
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.gameObject.tag.Equals("spikes"))
+        {
+            SceneManager.LoadScene("gameOver");
+        }
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if(collision.gameObject.tag.Equals("floor"))
         {
             isJumping = false;
+        }
+        if (collision.gameObject.tag.Equals("over"))
+        {
+            SceneManager.LoadScene("gameOver");
+        }
+
+        if (collision.gameObject.tag.Equals("victory"))
+        {
+            SceneManager.LoadScene("mainScene");
         }
     }
 

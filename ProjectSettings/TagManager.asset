@@ -7,6 +7,10 @@ TagManager:
   - floor
   - victory
   - over
+  - spikes
+  - enemy
+  - limLeft
+  - limRight
   layers:
   - Default
   - TransparentFX

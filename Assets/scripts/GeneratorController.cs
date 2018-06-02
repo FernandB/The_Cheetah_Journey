@@ -23,61 +23,96 @@ public class GeneratorController : MonoBehaviour {
     [SerializeField]
     [Range(0.0f, 1.0f)]
     float spikesChance = 0.5f;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    float holeChance = 0.1f;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    float enemyChance = 0.1f;
+
+   
+    [SerializeField]
+    GameObject spikes;
+    [SerializeField]
+    private GameObject flag;
 
     [SerializeField]
     GameObject floorTop;
     [SerializeField]
     GameObject floorBottom;
     [SerializeField]
-    GameObject spikes;
+    private GameObject floorTopLeft;
+    [SerializeField]
+    private GameObject floorTopRight;
+
+    [SerializeField]
+    private GameObject enemy;
 
     private int blockHeight = 0;
-
+    private bool[] blockIsHole;
     private float blockNum = 0;
     private bool isHazard = false;
     private float posXArrival= 121f;
-    private const int YMAX= 19;
-    private const int YMIN= -21;
+    private const int YMAX= 34;
+    private const int YMIN= -41;
     private const float yDelta = 0.8f;
-
+  
     // Use this for initialization
     void Start ()
     {
+
+        Random.InitState(System.DateTime.Now.Millisecond);
         //Calculate the maximum number of platform on x axis
-       int maxNbPlatformsHorizontal = Mathf.RoundToInt(posXArrival / floorTop.GetComponent<Renderer>().bounds.size.x);
-        
+        int maxNbPlatformsHorizontal = Mathf.RoundToInt(posXArrival / floorTop.GetComponent<Renderer>().bounds.size.x-0.2f);
+        blockIsHole = new bool[maxNbPlatformsHorizontal+1];
        
         for (int i = 0; i < maxNbPlatformsHorizontal; i++)
         {
 
-          
-            Random.InitState(System.DateTime.Now.Millisecond);
 
-            blockHeight = blockHeight + Mathf.RoundToInt(Random.Range(maxDrop, maxHeight));
-           
-            if (blockHeight > YMAX)
-                blockHeight = YMAX;
 
-            if (blockHeight < YMIN)
-                blockHeight = YMIN;
+            if (i >=0 && Random.value > holeChance||i>0&&blockIsHole[i-1]||i==0)
+            {
+                int heightTemp = blockHeight;
+                blockHeight = blockHeight + Mathf.RoundToInt(Random.Range(maxDrop, maxHeight));
 
-            PopSpikes();
-            Random.InitState(System.DateTime.Now.Millisecond);
 
-            int platformSize = Mathf.RoundToInt(Random.Range(minPlatformSize, maxPlatformSize));
-           
+                if (blockHeight > YMAX)
+                    blockHeight = YMAX;
+
+                if (blockHeight < YMIN)
+                    blockHeight = YMIN;
+
+
+                if (i < maxNbPlatformsHorizontal - 3 && (i > 0&&!blockIsHole[i - 1])&&heightTemp>=blockHeight)
+                    PopSpikes();
+                else if(i == maxNbPlatformsHorizontal - 1)
+                    Instantiate(flag, new Vector2(blockNum, blockHeight + flag.GetComponent<Renderer>().bounds.size.y/2f), Quaternion.identity);
+
+
+                int platformSize = Mathf.RoundToInt(Random.Range(minPlatformSize, maxPlatformSize));
+
+
                 Instantiate(floorTop, new Vector2(blockNum, blockHeight), Quaternion.identity);
 
                 for (int x = 1; x < platformSize; x++)
                 {
                     Instantiate(floorBottom, new Vector2(blockNum, blockHeight - x), Quaternion.identity);
                 }
+                if (i != maxNbPlatformsHorizontal - 1)
+                    PopEnnemi();
+                blockIsHole[i] = false;
+            }
+            else
+            {
+                blockIsHole[i]=true;
+            }
+          
+            blockNum +=floorTop.GetComponent<Renderer>().bounds.size.x-0.2f;
 
-                blockNum+=floorTop.GetComponent<Renderer>().bounds.size.x;
 
+            
 
-
-           
 
         }
             
@@ -93,12 +128,13 @@ public class GeneratorController : MonoBehaviour {
 		
 	}
 
+       
 
+        
+    
    void PopSpikes()
     {
         
-        Random.InitState(System.DateTime.Now.Millisecond);
-
         if (isHazard)
         {
             isHazard = false;
@@ -113,12 +149,11 @@ public class GeneratorController : MonoBehaviour {
 
         if (isHazard)
         {
-            Random.InitState(System.DateTime.Now.Millisecond);
             if (Random.value < spikesChance)
             {
-
+               
                 //Generate spikes
-                
+                if (blockNum>2)
               Instantiate(spikes, new Vector2(blockNum, blockHeight+yDelta), Quaternion.identity);
                
                 
@@ -127,5 +162,49 @@ public class GeneratorController : MonoBehaviour {
         }
     }
 
- 
+    void PopEnnemi()
+    {
+        if (blockNum > 2) {
+            if (!isHazard)
+            {
+                if (Random.value < enemyChance)
+                {
+
+                    //Generate three platforms
+                    int platformSize = Mathf.RoundToInt(Random.Range(minPlatformSize, maxPlatformSize));
+
+                    blockNum += floorTop.GetComponent<Renderer>().bounds.size.x - 0.2f;
+                    Instantiate(floorTopLeft, new Vector2(blockNum, blockHeight), Quaternion.identity);
+
+                    for (int x = 1; x < platformSize; x++)
+                    {
+                        Instantiate(floorBottom, new Vector2(blockNum, blockHeight - x), Quaternion.identity);
+                    }
+
+                    blockNum += floorTop.GetComponent<Renderer>().bounds.size.x - 0.2f;
+                    Instantiate(floorTop, new Vector2(blockNum, blockHeight), Quaternion.identity);
+
+                    for (int x = 1; x < platformSize; x++)
+                    {
+                        Instantiate(floorBottom, new Vector2(blockNum, blockHeight - x), Quaternion.identity);
+                    }
+                    blockNum += floorTop.GetComponent<Renderer>().bounds.size.x - 0.2f;
+                    Instantiate(floorTopRight, new Vector2(blockNum, blockHeight), Quaternion.identity);
+
+                    for (int x = 1; x < platformSize; x++)
+                    {
+                        Instantiate(floorBottom, new Vector2(blockNum, blockHeight - x), Quaternion.identity);
+                    }
+
+                    //Generate enemy
+                    GameObject enemyTemp=Instantiate(enemy, new Vector2(blockNum- floorTop.GetComponent<Renderer>().bounds.size.x/2f, blockHeight + 1f), Quaternion.identity);
+                    enemyTemp.SetActive(true);
+                    blockNum += floorTop.GetComponent<Renderer>().bounds.size.x-0.2f;
+
+
+                }
+            }
+        }
+    }
+
 }
